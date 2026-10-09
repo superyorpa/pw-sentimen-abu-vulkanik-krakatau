@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Sentimen Abu Vulkanik</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+            --radius: 0.5rem;
+        }
+
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --card: 222.2 84% 4.9%;
+            --card-foreground: 210 40% 98%;
+            --popover: 222.2 84% 4.9%;
+            --popover-foreground: 210 40% 98%;
+            --primary: 217.2 91.2% 59.8%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 224.3 76.3% 48%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+
+        .shad-card {
+            background-color: hsl(var(--card));
+            color: hsl(var(--card-foreground));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .shad-badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 9999px;
+            padding: 0.125rem 0.625rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: background-color 0.15s, color 0.15s;
+        }
+        
+        .shad-badge-positive {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .shad-badge-negative {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .shad-badge-neutral {
+            background-color: #f1f5f9;
+            color: #475569;
+        }
+
+        /* Loading Skeleton Animation */
+        .skeleton {
+            background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--border)) 50%, hsl(var(--muted)) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Custom scrollbar for table container */
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: hsl(var(--muted)); 
+            border-radius: var(--radius);
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: hsl(var(--muted-foreground)); 
+            border-radius: var(--radius);
+        }
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: hsl(var(--primary)); 
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(var(--destructive))",
+                            foreground: "hsl(var(--destructive-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))",
+                        },
+                        popover: {
+                            DEFAULT: "hsl(var(--popover))",
+                            foreground: "hsl(var(--popover-foreground))",
+                        },
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))",
+                        },
+                    },
+                    borderRadius: {
+                        lg: "var(--radius)",
+                        md: "calc(var(--radius) - 2px)",
+                        sm: "calc(var(--radius) - 4px)",
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen bg-background antialiased p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto space-y-8">
+        
+        <!-- Header Section -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight">Sentimen Abu Vulkanik</h1>
+                <p class="text-muted-foreground mt-1 text-sm md:text-base">
+                    Analisis opini publik dari media sosial terkait dampak abu vulkanik.
+                </p>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <button id="refreshBtn" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
+                    <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
+                    Refresh Data
+                </button>
+                <button id="themeToggle" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 w-9">
+                    <i data-lucide="moon" id="moonIcon" class="w-4 h-4"></i>
+                    <i data-lucide="sun" id="sunIcon" class="w-4 h-4 hidden"></i>
+                </button>
+            </div>
+        </header>
+
+        <div id="loadingState" class="space-y-6">
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div class="shad-card p-6 rounded-xl"><div class="h-4 w-1/2 skeleton mb-4 rounded"></div><div class="h-8 w-3/4 skeleton rounded"></div></div>
+                <div class="shad-card p-6 rounded-xl"><div class="h-4 w-1/2 skeleton mb-4 rounded"></div><div class="h-8 w-3/4 skeleton rounded"></div></div>
+                <div class="shad-card p-6 rounded-xl"><div class="h-4 w-1/2 skeleton mb-4 rounded"></div><div class="h-8 w-3/4 skeleton rounded"></div></div>
+                <div class="shad-card p-6 rounded-xl"><div class="h-4 w-1/2 skeleton mb-4 rounded"></div><div class="h-8 w-3/4 skeleton rounded"></div></div>
+            </div>
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                <div class="shad-card col-span-4 p-6 rounded-xl h-[400px] skeleton"></div>
+                <div class="shad-card col-span-3 p-6 rounded-xl h-[400px] skeleton"></div>
+            </div>
+        </div>
+
+        <div id="errorState" class="hidden rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
+            <div class="flex items-center gap-2 font-semibold">
+                <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                Gagal memuat data
+            </div>
+            <p class="mt-1 text-sm opacity-90" id="errorMessage">Terdapat masalah saat mengambil data dari API.</p>
+        </div>
+
+        <div id="dashboardContent" class="hidden space-y-6">
+            
+            <!-- Summary Cards -->
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <!-- Total Posts -->
+                <div class="shad-card p-6 rounded-xl flex flex-col justify-between">
+                    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <h3 class="tracking-tight text-sm font-medium">Total Data</h3>
+                        <i data-lucide="database" class="w-4 h-4 text-muted-foreground"></i>
+                    </div>
+                    <div class="text-2xl font-bold" id="totalPosts">0</div>
+                    <p class="text-xs text-muted-foreground mt-1">Postingan dianalisis</p>
+                </div>
+
+                <!-- Positive Sentiment -->
+                <div class="shad-card p-6 rounded-xl flex flex-col justify-between">
+                    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <h3 class="tracking-tight text-sm font-medium">Sentimen Positif</h3>
+                        <i data-lucide="smile" class="w-4 h-4 text-green-500"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-green-600 dark:text-green-400" id="posCount">0</div>
+                    <p class="text-xs text-muted-foreground mt-1" id="posPerc">0% dari total</p>
+                </div>
+
+                <!-- Neutral Sentiment -->
+                <div class="shad-card p-6 rounded-xl flex flex-col justify-between">
+                    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <h3 class="tracking-tight text-sm font-medium">Sentimen Netral</h3>
+                        <i data-lucide="meh" class="w-4 h-4 text-slate-500"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-slate-600 dark:text-slate-400" id="neuCount">0</div>
+                    <p class="text-xs text-muted-foreground mt-1" id="neuPerc">0% dari total</p>
+                </div>
+
+                <!-- Negative Sentiment -->
+                <div class="shad-card p-6 rounded-xl flex flex-col justify-between">
+                    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <h3 class="tracking-tight text-sm font-medium">Sentimen Negatif</h3>
+                        <i data-lucide="frown" class="w-4 h-4 text-red-500"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-red-600 dark:text-red-400" id="negCount">0</div>
+                    <p class="text-xs text-muted-foreground mt-1" id="negPerc">0% dari total</p>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                
+                <!-- Bar Chart: Sentiment Distribution -->
+                <div class="shad-card col-span-4 rounded-xl p-6">
+                    <div class="flex flex-col space-y-1.5 mb-4">
+                        <h3 class="font-semibold leading-none tracking-tight">Distribusi Sentimen</h3>
+                        <p class="text-sm text-muted-foreground">Perbandingan jumlah sentimen positif, netral, dan negatif.</p>
+                    </div>
+                    <div class="h-[300px] w-full flex items-center justify-center">
+                         <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Doughnut Chart: Proportion -->
+                <div class="shad-card col-span-3 rounded-xl p-6">
+                    <div class="flex flex-col space-y-1.5 mb-4">
+                        <h3 class="font-semibold leading-none tracking-tight">Proporsi Keseluruhan</h3>
+                        <p class="text-sm text-muted-foreground">Persentase sentimen masyarakat.</p>
+                    </div>
+                    <div class="h-[300px] w-full flex items-center justify-center relative">
+                        <canvas id="doughnutChart"></canvas>
+                        <!-- Center text for Doughnut -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-4">
+                            <span class="text-3xl font-bold" id="dominantPercentage">0%</span>
+                            <span class="text-sm text-muted-foreground" id="dominantLabel">Dominan</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="shad-card rounded-xl">
+                <div class="p-6 flex flex-col space-y-1.5 border-b border-border">
+                    <h3 class="font-semibold leading-none tracking-tight">Data Mentah & Analisis</h3>
+                    <p class="text-sm text-muted-foreground">Detail postingan dan sentimen yang terdeteksi.</p>
+                </div>
+                
+                <div class="p-0 table-container overflow-x-auto max-h-[500px]">
+                    <table class="w-full caption-bottom text-sm">
+                        <thead class="[&_tr]:border-b sticky top-0 bg-card z-10">
+                            <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[150px]">Tanggal</th>
+                                <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[150px]">Username</th>
+                                <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground max-w-[400px]">Teks Postingan</th>
+                                <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[120px]">Sentimen</th>
+                                <th class="h-12 px-4 text-right align-middle font-medium text-muted-foreground w-[100px]">Likes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="[&_tr:last-child]:border-0">
+                            <!-- Table rows will be inserted here dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-4 border-t border-border flex items-center justify-between">
+                    <p class="text-sm text-muted-foreground" id="tableInfo">Menampilkan 0 data.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // API Endpoint
+        const API_URL = 'https://api.apify.com/v2/datasets/8QrDAuYFiBNNquU3w/items?token=apify_api_joMrobsIXMm4dbnwcrD7JTHsRW86zA3imvdQ';
+
+        // DOM Elements
+        const loadingState = document.getElementById('loadingState');
+        const dashboardContent = document.getElementById('dashboardContent');
+        const errorState = document.getElementById('errorState');
+        const errorMessage = document.getElementById('errorMessage');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const tableBody = document.getElementById('tableBody');
+
+        // Chart instances
+        let barChartInstance = null;
+        let doughnutChartInstance = null;
+
+        // Theme Toggle Logic
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const htmlElement = document.documentElement;
+        
+        // Check local storage or system preference on load
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+            document.getElementById('moonIcon').classList.add('hidden');
+            document.getElementById('sunIcon').classList.remove('hidden');
+        } else {
+            htmlElement.classList.remove('dark');
+            document.getElementById('moonIcon').classList.remove('hidden');
+            document.getElementById('sunIcon').classList.add('hidden');
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            const isDark = htmlElement.classList.contains('dark');
+            
+            if (isDark) {
+                localStorage.theme = 'dark';
+                document.getElementById('moonIcon').classList.add('hidden');
+                document.getElementById('sunIcon').classList.remove('hidden');
+            } else {
+                localStorage.theme = 'light';
+                document.getElementById('moonIcon').classList.remove('hidden');
+                document.getElementById('sunIcon').classList.add('hidden');
+            }
+
+            // Redraw charts to update text colors based on theme
+            if (barChartInstance) barChartInstance.update();
+            if (doughnutChartInstance) doughnutChartInstance.update();
+        });
+
+
+        // Note: The provided Apify URL likely returns raw social media data. 
+        // We will simulate a basic keyword-based sentiment analysis for demonstration
+        // if the API data doesn't explicitly have a 'sentiment' field.
+        function analyzeSentiment(text) {
+            if (!text) return 'Neutral';
+            const lowerText = text.toLowerCase();
+            
+            const negativeKeywords = ['bahaya', 'takut', 'sesak', 'bencana', 'rusak', 'korban', 'mengganggu', 'kotor', 'buruk', 'waspada', 'panik', 'tutup', 'batal', 'delay'];
+            const positiveKeywords = ['aman', 'bersih', 'bantuan', 'gotong royong', 'semangat', 'doa', 'pulih', 'bisa', 'indah', 'subur'];
+            
+            let negScore = 0;
+            let posScore = 0;
+            
+            negativeKeywords.forEach(kw => { if(lowerText.includes(kw)) negScore++; });
+            positiveKeywords.forEach(kw => { if(lowerText.includes(kw)) posScore++; });
+            
+            if (negScore > posScore) return 'Negative';
+            if (posScore > negScore) return 'Positive';
+            return 'Neutral';
+        }
+
+        // Helper to format date
+        function formatDate(dateString) {
+            if(!dateString) return '-';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString; // fallback if not a valid date
+            
+            return new Intl.DateTimeFormat('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(date);
+        }
+
+        async function fetchData() {
+            // Show loading, hide content/error
+            loadingState.classList.remove('hidden');
+            dashboardContent.classList.add('hidden');
+            errorState.classList.add('hidden');
+
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                processAndRenderData(data);
+                
+                // Hide loading, show content
+                loadingState.classList.add('hidden');
+                dashboardContent.classList.remove('hidden');
+                
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                errorMessage.textContent = `Gagal memuat data: ${error.message}`;
+            }
+        }
+
+        function processAndRenderData(rawData) {
+            // In a real scenario, the API might already have sentiment. 
+            // We map the raw data to ensure we have required fields.
+            const processedData = rawData.map(item => {
+                // Determine text field (apis usually have 'text', 'full_text', or 'caption')
+                const text = item.text || item.full_text || item.caption || item.description || "";
+                
+                return {
+                    date: item.createdAt || item.created_at || item.timestamp || new Date().toISOString(),
+                    username: item.author?.userName || item.user?.screen_name || item.ownerUsername || "Anonim",
+                    text: text,
+                    // If API provides sentiment use it, else analyze
+                    sentiment: item.sentiment ? item.sentiment : analyzeSentiment(text),
+                    likes: item.likesCount || item.favorite_count || item.likes || 0
+                };
+            });
+
+            // Calculate Statistics
+            const total = processedData.length;
+            let posCount = 0;
+            let negCount = 0;
+            let neuCount = 0;
+
+            processedData.forEach(item => {
+                const sent = item.sentiment.toLowerCase();
+                if (sent === 'positive' || sent === 'positif') posCount++;
+                else if (sent === 'negative' || sent === 'negatif') negCount++;
+                else neuCount++;
+            });
+
+            // Update Summary Cards
+            document.getElementById('totalPosts').textContent = total.toLocaleString('id-ID');
+            document.getElementById('posCount').textContent = posCount.toLocaleString('id-ID');
+            document.getElementById('neuCount').textContent = neuCount.toLocaleString('id-ID');
+            document.getElementById('negCount').textContent = negCount.toLocaleString('id-ID');
+
+            const safeTotal = total > 0 ? total : 1;
+            document.getElementById('posPerc').textContent = `${((posCount/safeTotal)*100).toFixed(1)}% dari total`;
+            document.getElementById('neuPerc').textContent = `${((neuCount/safeTotal)*100).toFixed(1)}% dari total`;
+            document.getElementById('negPerc').textContent = `${((negCount/safeTotal)*100).toFixed(1)}% dari total`;
+
+            // Determine Dominant Sentiment
+            let dominantCount = Math.max(posCount, neuCount, negCount);
+            let dominantLabel = 'Netral';
+            let dominantColorClass = 'text-slate-500';
+            
+            if (dominantCount === posCount) { dominantLabel = 'Positif'; dominantColorClass = 'text-green-500'; }
+            else if (dominantCount === negCount) { dominantLabel = 'Negatif'; dominantColorClass = 'text-red-500'; }
+
+            const domElem = document.getElementById('dominantPercentage');
+            domElem.textContent = `${((dominantCount/safeTotal)*100).toFixed(0)}%`;
+            domElem.className = `text-3xl font-bold ${dominantColorClass}`;
+            document.getElementById('dominantLabel').textContent = `Dominan ${dominantLabel}`;
+
+
+            // Render Charts
+            renderCharts(posCount, neuCount, negCount);
+
+            // Render Table
+            renderTable(processedData);
+        }
+
+        function renderCharts(pos, neu, neg) {
+            // Common Chart.js Settings for Shadcn look
+            const getChartTextColor = () => htmlElement.classList.contains('dark') ? '#94a3b8' : '#64748b';
+            const getGridColor = () => htmlElement.classList.contains('dark') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
+            
+            const chartColors = {
+                positive: { bg: 'rgba(34, 197, 94, 0.8)', border: 'rgb(34, 197, 94)' },
+                neutral: { bg: 'rgba(148, 163, 184, 0.8)', border: 'rgb(148, 163, 184)' },
+                negative: { bg: 'rgba(239, 68, 68, 0.8)', border: 'rgb(239, 68, 68)' }
+            };
+
+            // --- Bar Chart ---
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            
+            if (barChartInstance) barChartInstance.destroy();
+            
+            barChartInstance = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Positif', 'Netral', 'Negatif'],
+                    datasets: [{
+                        label: 'Jumlah Postingan',
+                        data: [pos, neu, neg],
+                        backgroundColor: [chartColors.positive.bg, chartColors.neutral.bg, chartColors.negative.bg],
+                        borderColor: [chartColors.positive.border, chartColors.neutral.border, chartColors.negative.border],
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            padding: 12,
+                            titleFont: { family: 'Inter', size: 13 },
+                            bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: getGridColor, drawBorder: false },
+                            ticks: { color: getChartTextColor, font: { family: 'Inter' } }
+                        },
+                        x: {
+                            grid: { display: false, drawBorder: false },
+                            ticks: { color: getChartTextColor, font: { family: 'Inter' } }
+                        }
+                    }
+                }
+            });
+
+            // --- Doughnut Chart ---
+            const doughnutCtx = document.getElementById('doughnutChart').getContext('2d');
+            
+            if (doughnutChartInstance) doughnutChartInstance.destroy();
+
+            doughnutChartInstance = new Chart(doughnutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Positif', 'Netral', 'Negatif'],
+                    datasets: [{
+                        data: [pos, neu, neg],
+                        backgroundColor: [chartColors.positive.bg, chartColors.neutral.bg, chartColors.negative.bg],
+                        borderColor: htmlElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+                        borderWidth: 2,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%', // Creates the thin ring look
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: getChartTextColor,
+                                font: { family: 'Inter', size: 12 },
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            padding: 12,
+                            bodyFont: { family: 'Inter', size: 14 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTable(data) {
+            tableBody.innerHTML = ''; // Clear existing
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-muted-foreground">Tidak ada data tersedia.</td></tr>`;
+                document.getElementById('tableInfo').textContent = `Menampilkan 0 data.`;
+                return;
+            }
+
+            // Limit to top 50 for performance in table
+            const displayData = data.slice(0, 50);
+
+            displayData.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted';
+                
+                // Format sentiment badge
+                let badgeClass = 'shad-badge-neutral';
+                let sentimentLabel = 'Netral';
+                const s = item.sentiment.toLowerCase();
+                
+                if (s === 'positive' || s === 'positif') {
+                    badgeClass = 'shad-badge-positive';
+                    sentimentLabel = 'Positif';
+                } else if (s === 'negative' || s === 'negatif') {
+                    badgeClass = 'shad-badge-negative';
+                    sentimentLabel = 'Negatif';
+                }
+
+                // Truncate text if too long
+                const truncatedText = item.text.length > 100 ? item.text.substring(0, 100) + '...' : item.text;
+
+                tr.innerHTML = `
+                    <td class="p-4 align-middle whitespace-nowrap">${formatDate(item.date)}</td>
+                    <td class="p-4 align-middle font-medium">@${item.username}</td>
+                    <td class="p-4 align-middle">
+                        <div class="line-clamp-2" title="${item.text.replace(/"/g, '&quot;')}">${truncatedText}</div>
+                    </td>
+                    <td class="p-4 align-middle">
+                        <span class="shad-badge ${badgeClass}">${sentimentLabel}</span>
+                    </td>
+                    <td class="p-4 align-middle text-right">${item.likes.toLocaleString('id-ID')}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            document.getElementById('tableInfo').textContent = `Menampilkan ${displayData.length} dari ${data.length} data terbaru.`;
+        }
+
+        refreshBtn.addEventListener('click', () => {
+            const icon = refreshBtn.querySelector('i');
+            icon.classList.add('animate-spin');
+            
+            fetchData().finally(() => {
+                // Small delay so user sees the spinning action
+                setTimeout(() => {
+                    icon.classList.remove('animate-spin');
+                }, 500);
+            });
+        });
+
+        // Initial fetch on load
+        document.addEventListener('DOMContentLoaded', fetchData);
+
+    </script>
+</body>
+</html>
